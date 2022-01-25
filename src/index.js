@@ -1,11 +1,11 @@
 import p5 from 'p5';
 import {PRNGRand} from "./random";
-import {seaGen} from "./sea";
 
 
 let chunks = []
 var recorder;
 const pixelDens = 1;
+const border = 35;
 const sketch = p5 => {
 
     let colorScheme;
@@ -45,16 +45,15 @@ const sketch = p5 => {
         p5.debugEnabled = false
 
 
-        shapes = seaGen(p5, 1000)
     }
 
     p5.mouseReleased = () => {
-        shapes = seaGen(p5, 500)
         p5.loop()
     }
 
     p5.keyPressed = () => {
         if (p5.key === 'r') {
+            return;//disable recording
             recording = !recording
             if (recording) {
                 record()
@@ -81,21 +80,92 @@ const sketch = p5 => {
 
     p5.draw = () => {
 
+        const pallettes = [
+            ['#7D7C84', "#DBD56E", '#88AB75', "#2D93AD", '#DE8F6E'],
+            ['#2D93AD', "#D9DBF1", '#DE8F6E', "#DDC67B", '#DE8F6E', '#1c5a6b']
+        ]
+        const p = pallettes[1]
 
         p5.push()
-        p5.background(10, 15, 39)
+        p5.background(p[0])
 
-        const N = 1000;
+        const N = 200;
         p5.noStroke();
-        p5.fill(123,15,109);
-        const h2 = p5.height/2
-        for (let i = 0; i <N; i++) {
-            p5.ellipse(p5.sb.random(0,p5.width),p5.sb.random( 0,h2),2,2)
+        p5.stroke(p[1]);
+        p5.fill(p[2]);
+        p5.strokeWeight(8);
+
+        function colorAlpha(aColor, alpha) {
+            var c = p5.color(aColor);
+            return p5.color('rgba(' + [p5.red(c), p5.green(c), p5.blue(c), alpha].join(',') + ')');
         }
-        p5.fill(201,190,10);
-        for (let i = 0; i <N; i++) {
-            p5.ellipse(p5.random(0,p5.width),p5.sb.random( 0,h2)+h2,2,2)
+
+        const shadowColor = colorAlpha(p[5], .65)
+
+        const boundsW = p5.width - border * 2
+        const boundsH = p5.height - border * 2
+        const h2 = boundsH / 2
+        const shapeSizeMin = p5.width * 0.0175
+        const shapeSizeMax = shapeSizeMin * 3
+        for (let i = 0; i < N; i++) {
+            const x = p5.sb.random(0, boundsW) + border
+            const y = p5.sb.random(h2) + border
+            const rs = p5.sb.random()
+            const r = rs * (shapeSizeMax - shapeSizeMin) + shapeSizeMin
+            const arc = p5.sb.random((p5.PI + p5.QUARTER_PI) * .8, (p5.PI + p5.QUARTER_PI) * 1.2)
+            // p5.curveVertex(x,y)
+            // p5.ellipse(x,y,2,2)
+            // p5.beginShape()
+            const rot = p5.PI * .6 + (p5.sb.random() - p5.sb.random()) + p5.QUARTER_PI * .6
+            p5.push()
+            p5.translate(x + 4 * rs + 1, y + 4 * rs + 1)
+            p5.rotate(rot)
+            p5.fill(shadowColor)
+            p5.stroke(shadowColor)
+            p5.arc(0, 0, r, r, 0, arc, p5.OPEN);
+            p5.pop()
+
+            p5.push()
+            p5.translate(x, y)
+            p5.rotate(rot)
+            p5.arc(0, 0, r, r, 0, arc, p5.OPEN);
+            p5.pop()
+
         }
+        // p5.endShape(p5.CLOSE)
+        p5.curveTightness(0);
+
+        p5.stroke(p[3]);
+        p5.fill(p[4]);
+        // p5.beginShape()
+
+        for (let i = 0; i < N; i++) {
+            const x = p5.random() * boundsW + border
+            const y = p5.random() * h2 + h2 + border
+            const rs = p5.random()
+            const r = rs * (shapeSizeMax - shapeSizeMin) + shapeSizeMin
+            const arc = p5.sb.random((p5.PI + p5.QUARTER_PI) * .8, (p5.PI + p5.QUARTER_PI) * 1.2)
+            const rot = p5.PI * .6 + (p5.sb.random() - p5.sb.random()) + p5.QUARTER_PI * .6
+            p5.push()
+            p5.translate(x + 4 * rs + 1, y + 4 * rs + 1)
+            p5.rotate(rot)
+            p5.fill(shadowColor)
+            p5.stroke(shadowColor)
+            p5.arc(0, 0, r, r, 0, arc, p5.OPEN);
+            p5.pop()
+
+            p5.push()
+            p5.translate(x, y)
+            p5.rotate(rot)
+            p5.arc(0, 0, r, r, 0, arc, p5.OPEN);
+            p5.pop()
+        }
+        // p5.endShape()
+
+        p5.noFill()
+        p5.stroke(0)
+        p5.strokeWeight(border)
+        p5.rect(0, 0, p5.width, p5.height)
 
         p5.noLoop();
 

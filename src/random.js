@@ -1,4 +1,3 @@
-import Alea from "./prng/Alea";
 import StewPRNG from "./prng/Stew";
 
 
